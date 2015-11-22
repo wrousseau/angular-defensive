@@ -1,0 +1,28 @@
+{
+  "name": "angular-defensive",
+  "description": "Defensive design features for your angular application",
+  "main": "index.js",
+  "authors": [
+    "Woody Rousseau <woody.a.rousseau@gmail.com>"
+  ],
+  "license": "Apache-2.0",
+  "keywords": [
+    "defensive",
+    "design",
+    "angular",
+    "blank",
+    "error",
+    "state",
+    "empty",
+    "unusual"
+  ],
+  "moduleType": [],
+  "homepage": "https://github.com/wrousseau/angular-defensive",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

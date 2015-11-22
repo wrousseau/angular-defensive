@@ -1,0 +1,29 @@
+{
+  "name": "angular-defensive",
+  "version": "1.0.0",
+  "description": "Defensive design features for your angular application",
+  "main": "index.js",
+  "scripts": {
+    "test": "gulp test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wrousseau/angular-defensive.git"
+  },
+  "keywords": [
+    "defensive",
+    "design",
+    "angular",
+    "blank",
+    "error",
+    "state",
+    "empty",
+    "unusual"
+  ],
+  "author": "Woody Rousseau <woody.a.rousseau@gmail.com>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/wrousseau/angular-defensive/issues"
+  },
+  "homepage": "https://github.com/wrousseau/angular-defensive#readme"
+}
