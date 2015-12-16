@@ -46,7 +46,7 @@ class DefensiveConfiguration {
           }
         });
       },
-      getDefensiveTemplate(configurationName) {
+      getDefensiveCase(configurationName) {
         let self = this;
         return new Promise(function(resolve, reject) {
           if (!configurations.hasOwnProperty(configurationName)) {
@@ -58,7 +58,8 @@ class DefensiveConfiguration {
             if (confCase.check()) {
               return self.getTemplate(confCase)
               .then(function(template) {
-                return resolve(template);
+                confCase.template = template;
+                return resolve(confCase);
               });
             }
           }
