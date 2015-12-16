@@ -1,7 +1,7 @@
 {
   "name": "angular-defensive",
   "description": "Defensive design features for your angular application",
-  "main": "index.js",
+  "main": "dist/angular-defensive.min.js",
   "authors": [
     "Woody Rousseau <woody.a.rousseau@gmail.com>"
   ],
