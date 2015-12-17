@@ -40,20 +40,30 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 							}
 						});
 					},
-					getDefensiveTemplate: function getDefensiveTemplate(configurationName) {
+					getDefensiveCase: function getDefensiveCase(configurationName) {
 						var self = this;
 						return new Promise(function (resolve, reject) {
 							if (!configurations.hasOwnProperty(configurationName)) {
 								return reject('Configuration ' + configurationName + ' does not exist');
 							}
 							var configuration = configurations[configurationName];
-							while (configuration.cases.length) {
+
+							var _loop = function () {
 								var confCase = configuration.cases.shift();
 								if (confCase.check()) {
-									return self.getTemplate(confCase).then(function (template) {
-										return resolve(template);
-									});
+									return {
+										v: self.getTemplate(confCase).then(function (template) {
+											confCase.template = template;
+											return resolve(confCase);
+										})
+									};
 								}
+							};
+
+							while (configuration.cases.length) {
+								var _ret = _loop();
+
+								if (typeof _ret === 'object') return _ret.v;
 							}
 						});
 					}
@@ -104,10 +114,18 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 			_classCallCheck(this, NgDefensive);
 
 			this.restrict = 'A';
+			this.scope = {
+				callbacks: '=ngDefensiveCallbacks'
+			};
 			this.link = function (scope, element, attrs) {
-				DefensiveConfiguration.getDefensiveTemplate(attrs.ngDefensive).then(function (template) {
-					element.replaceWith($compile(template)(scope));
+				var activeCase = null;
+				DefensiveConfiguration.getDefensiveCase(attrs.ngDefensive).then(function (confCase) {
+					element.replaceWith($compile(confCase.template)(scope));
+					activeCase = confCase;
 				});
+				scope.action = function () {
+					scope.callbacks[activeCase.caseName]();
+				};
 			};
 		}
 
