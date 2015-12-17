@@ -110,7 +110,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 	var moduleName$2 = 'ngDefensive.services';
 
-	angular.module(moduleName$2, []).factory('DefensiveConfiguration', DefensiveConfiguration.factory);
+	angular.module(moduleName$2, ['offline']).factory('DefensiveConfiguration', DefensiveConfiguration.factory).factory('CheckPreset', CheckPreset.factory);
 
 	var NgDefensive = (function () {
 		function NgDefensive($compile, DefensiveConfiguration) {
