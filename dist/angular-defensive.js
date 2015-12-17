@@ -108,9 +108,33 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 		return DefensiveConfiguration;
 	})();
 
+	var CONNECTION_STATUS = new WeakMap();
+
+	var CheckPreset = (function () {
+		function CheckPreset(connectionStatus) {
+			_classCallCheck(this, CheckPreset);
+
+			CONNECTION_STATUS.set(this, connectionStatus);
+		}
+
+		_createClass(CheckPreset, [{
+			key: 'noNetwork',
+			value: function noNetwork() {
+				return !connectionStatus.isOnline();
+			}
+		}], [{
+			key: 'factory',
+			value: function factory(connectionStatus) {
+				return new CheckPreset(connectionStatus);
+			}
+		}]);
+
+		return CheckPreset;
+	})();
+
 	var moduleName$2 = 'ngDefensive.services';
 
-	angular.module(moduleName$2, []).factory('DefensiveConfiguration', DefensiveConfiguration.factory);
+	angular.module(moduleName$2, ['offline']).factory('CheckPreset', CheckPreset.factory).factory('DefensiveConfiguration', DefensiveConfiguration.factory);
 
 	var NgDefensive = (function () {
 		function NgDefensive($compile, DefensiveConfiguration) {
