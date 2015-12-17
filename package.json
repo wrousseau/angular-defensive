@@ -2,7 +2,7 @@
   "name": "angular-defensive",
   "version": "0.0.1",
   "description": "Defensive design for your angular application",
-  "main": "dist/angular-defensive.min.js",
+  "main": "dist/angular-defensive.js",
   "scripts": {
     "test": "gulp",
     "test-browser": "gulp test-browser",

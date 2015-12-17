@@ -7,10 +7,15 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 })(this, function () {
 	'use strict';
 
+	var HTTP = new WeakMap();
+	var TEMPLATE_CACHE = new WeakMap();
+
 	var DefensiveConfiguration = (function () {
-		function DefensiveConfiguration() {
+		function DefensiveConfiguration($http, $templateCache) {
 			_classCallCheck(this, DefensiveConfiguration);
 
+			HTTP.set(this, $http);
+			TEMPLATE_CACHE.set(this, $templateCache);
 			this.configurations = {};
 		}
 
@@ -22,52 +27,49 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 				return configuration;
 			}
 		}, {
-			key: '$get',
-			value: function $get($http, $templateCache) {
-				var configurations = this.configurations;
-				return {
-					getTemplate: function getTemplate(confCase) {
-						return new Promise(function (resolve) {
-							if (confCase.hasOwnProperty('template')) {
-								resolve(confCase.template);
-							} else if (confCase.hasOwnProperty('templateUrl')) {
-								$http.get(confCase.templateUrl, {
-									cache: $templateCache,
-									headers: { Accept: 'text/html' }
-								}).then(function (response) {
-									resolve(response.data);
-								});
-							}
-						});
-					},
-					getDefensiveCase: function getDefensiveCase(configurationName) {
-						var self = this;
-						return new Promise(function (resolve, reject) {
-							if (!configurations.hasOwnProperty(configurationName)) {
-								return reject('Configuration ' + configurationName + ' does not exist');
-							}
-							var configuration = configurations[configurationName];
-
-							var _loop = function () {
-								var confCase = configuration.cases.shift();
-								if (confCase.check()) {
-									return {
-										v: self.getTemplate(confCase).then(function (template) {
-											confCase.template = template;
-											return resolve(confCase);
-										})
-									};
-								}
-							};
-
-							while (configuration.cases.length) {
-								var _ret = _loop();
-
-								if (typeof _ret === 'object') return _ret.v;
-							}
+			key: 'getTemplate',
+			value: function getTemplate(confCase) {
+				return new Promise(function (resolve) {
+					if (confCase.hasOwnProperty('template')) {
+						resolve(confCase.template);
+					} else if (confCase.hasOwnProperty('templateUrl')) {
+						HTTP.get(this).get(confCase.templateUrl, {
+							cache: TEMPLATE_CACHE.get(this),
+							headers: { Accept: 'text/html' }
+						}).then(function (response) {
+							resolve(response.data);
 						});
 					}
-				};
+				});
+			}
+		}, {
+			key: 'getDefensiveCase',
+			value: function getDefensiveCase(configurationName) {
+				var configurations = this.configurations;
+				return new Promise(function (resolve, reject) {
+					if (!configurations.hasOwnProperty(configurationName)) {
+						return reject('Configuration ' + configurationName + ' does not exist');
+					}
+					var configuration = configurations[configurationName];
+
+					var _loop = function () {
+						var confCase = configuration.cases.shift();
+						if (confCase.check()) {
+							return {
+								v: self.getTemplate(confCase).then(function (template) {
+									confCase.template = template;
+									return resolve(confCase);
+								})
+							};
+						}
+					};
+
+					while (configuration.cases.length) {
+						var _ret = _loop();
+
+						if (typeof _ret === 'object') return _ret.v;
+					}
+				});
 			}
 		}, {
 			key: 'Configuration',
@@ -76,8 +78,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 			}
 		}], [{
 			key: 'factory',
-			value: function factory() {
-				return new DefensiveConfiguration();
+			value: function factory($http, $templateCache) {
+				return new DefensiveConfiguration($http, $templateCache);
 			}
 		}, {
 			key: 'Configuration',
@@ -107,7 +109,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 	var moduleName$2 = 'ngDefensive.services';
 
-	angular.module(moduleName$2, []).provider('DefensiveConfiguration', DefensiveConfiguration.factory);
+	angular.module(moduleName$2, []).factory('DefensiveConfiguration', DefensiveConfiguration.factory);
 
 	var NgDefensive = (function () {
 		function NgDefensive($compile, DefensiveConfiguration) {
