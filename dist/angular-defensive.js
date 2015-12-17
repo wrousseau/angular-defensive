@@ -45,12 +45,12 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 		}, {
 			key: 'getDefensiveCase',
 			value: function getDefensiveCase(configurationName) {
-				var configurations = this.configurations;
+				var self = this;
 				return new Promise(function (resolve, reject) {
-					if (!configurations.hasOwnProperty(configurationName)) {
+					if (!self.configurations.hasOwnProperty(configurationName)) {
 						return reject('Configuration ' + configurationName + ' does not exist');
 					}
-					var configuration = configurations[configurationName];
+					var configuration = self.configurations[configurationName];
 
 					var _loop = function () {
 						var confCase = configuration.cases.shift();

@@ -50,12 +50,12 @@ class DefensiveConfiguration {
   }
 
   getDefensiveCase(configurationName) {
-    let configurations = this.configurations;
+    let self = this;
     return new Promise(function(resolve, reject) {
-      if (!configurations.hasOwnProperty(configurationName)) {
+      if (!self.configurations.hasOwnProperty(configurationName)) {
         return reject(`Configuration ${configurationName} does not exist`);
       }
-      let configuration = configurations[configurationName];
+      let configuration = self.configurations[configurationName];
       while (configuration.cases.length) {
         let confCase = configuration.cases.shift();
         if (confCase.check()) {
