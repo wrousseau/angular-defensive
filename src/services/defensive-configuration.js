@@ -33,13 +33,14 @@ class DefensiveConfiguration {
   }
 
   getTemplate(confCase) {
+    let self = this;
     return new Promise(function(resolve) {
       if (confCase.hasOwnProperty('template')) {
         resolve(confCase.template);
       } else if (confCase.hasOwnProperty('templateUrl')) {
-        HTTP.get(this)
+        HTTP.get(self)
           .get(confCase.templateUrl, {
-            cache: TEMPLATE_CACHE.get(this),
+            cache: TEMPLATE_CACHE.get(self),
             headers: {Accept: 'text/html'}
           })
           .then(function(response) {

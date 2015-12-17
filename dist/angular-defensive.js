@@ -29,12 +29,13 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 		}, {
 			key: 'getTemplate',
 			value: function getTemplate(confCase) {
+				var self = this;
 				return new Promise(function (resolve) {
 					if (confCase.hasOwnProperty('template')) {
 						resolve(confCase.template);
 					} else if (confCase.hasOwnProperty('templateUrl')) {
-						HTTP.get(this).get(confCase.templateUrl, {
-							cache: TEMPLATE_CACHE.get(this),
+						HTTP.get(self).get(confCase.templateUrl, {
+							cache: TEMPLATE_CACHE.get(self),
 							headers: { Accept: 'text/html' }
 						}).then(function (response) {
 							resolve(response.data);
