@@ -1,6 +1,11 @@
+const HTTP = new WeakMap();
+const TEMPLATE_CACHE = new WeakMap();
+
 class DefensiveConfiguration {
 
-  constructor() {
+  constructor($http, $templateCache) {
+    HTTP.set(this, $http);
+    TEMPLATE_CACHE.set(this, $templateCache);
     this.configurations = {};
   }
 
@@ -27,49 +32,45 @@ class DefensiveConfiguration {
     return configuration;
   }
 
-  $get($http, $templateCache) {
-    let configurations = this.configurations;
-    return {
-      getTemplate(confCase) {
-        return new Promise(function(resolve) {
-          if (confCase.hasOwnProperty('template')) {
-            resolve(confCase.template);
-          } else if (confCase.hasOwnProperty('templateUrl')) {
-            $http
-              .get(confCase.templateUrl, {
-                cache: $templateCache,
-                headers: {Accept: 'text/html'}
-              })
-              .then(function(response) {
-                resolve(response.data);
-              });
-          }
-        });
-      },
-      getDefensiveCase(configurationName) {
-        let self = this;
-        return new Promise(function(resolve, reject) {
-          if (!configurations.hasOwnProperty(configurationName)) {
-            return reject(`Configuration ${configurationName} does not exist`);
-          }
-          let configuration = configurations[configurationName];
-          while (configuration.cases.length) {
-            let confCase = configuration.cases.shift();
-            if (confCase.check()) {
-              return self.getTemplate(confCase)
-              .then(function(template) {
-                confCase.template = template;
-                return resolve(confCase);
-              });
-            }
-          }
-        });
+  getTemplate(confCase) {
+    return new Promise(function(resolve) {
+      if (confCase.hasOwnProperty('template')) {
+        resolve(confCase.template);
+      } else if (confCase.hasOwnProperty('templateUrl')) {
+        HTTP.get(this)
+          .get(confCase.templateUrl, {
+            cache: TEMPLATE_CACHE.get(this),
+            headers: {Accept: 'text/html'}
+          })
+          .then(function(response) {
+            resolve(response.data);
+          });
       }
-    };
+    });
   }
 
-  static factory() {
-    return new DefensiveConfiguration();
+  getDefensiveCase(configurationName) {
+    let configurations = this.configurations;
+    return new Promise(function(resolve, reject) {
+      if (!configurations.hasOwnProperty(configurationName)) {
+        return reject(`Configuration ${configurationName} does not exist`);
+      }
+      let configuration = configurations[configurationName];
+      while (configuration.cases.length) {
+        let confCase = configuration.cases.shift();
+        if (confCase.check()) {
+          return self.getTemplate(confCase)
+          .then(function(template) {
+            confCase.template = template;
+            return resolve(confCase);
+          });
+        }
+      }
+    });
+  }
+
+  static factory($http, $templateCache) {
+    return new DefensiveConfiguration($http, $templateCache);
   }
 
 }
