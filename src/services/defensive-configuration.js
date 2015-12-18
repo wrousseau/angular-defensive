@@ -56,9 +56,9 @@ class DefensiveConfiguration {
       if (!self.configurations.hasOwnProperty(configurationName)) {
         return reject(`Configuration ${configurationName} does not exist`);
       }
-      let configuration = self.configurations[configurationName];
-      while (configuration.cases.length) {
-        let confCase = configuration.cases.shift();
+      let cases = self.configurations[configurationName].cases.slice();
+      while (cases.length) {
+        let confCase = cases.shift();
         if (confCase.check()) {
           return self.getTemplate(confCase)
           .then(function(template) {

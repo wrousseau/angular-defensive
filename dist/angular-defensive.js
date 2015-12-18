@@ -51,10 +51,10 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 					if (!self.configurations.hasOwnProperty(configurationName)) {
 						return reject('Configuration ' + configurationName + ' does not exist');
 					}
-					var configuration = self.configurations[configurationName];
+					var cases = self.configurations[configurationName].cases.slice();
 
 					var _loop = function () {
-						var confCase = configuration.cases.shift();
+						var confCase = cases.shift();
 						if (confCase.check()) {
 							return {
 								v: self.getTemplate(confCase).then(function (template) {
@@ -65,7 +65,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 						}
 					};
 
-					while (configuration.cases.length) {
+					while (cases.length) {
 						var _ret = _loop();
 
 						if (typeof _ret === 'object') return _ret.v;
@@ -108,24 +108,17 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 		return DefensiveConfiguration;
 	})();
 
-	var CONNECTION_STATUS = new WeakMap();
-
 	var CheckPreset = (function () {
 		function CheckPreset(connectionStatus) {
 			_classCallCheck(this, CheckPreset);
 
-			CONNECTION_STATUS.set(this, connectionStatus);
+			this.connectionStatus = connectionStatus;
 		}
 
 		_createClass(CheckPreset, [{
 			key: 'noNetwork',
 			value: function noNetwork() {
-				return !connectionStatus.isOnline();
-			}
-		}], [{
-			key: 'factory',
-			value: function factory(connectionStatus) {
-				return new CheckPreset(connectionStatus);
+				return !this.connectionStatus.isOnline();
 			}
 		}]);
 
@@ -134,16 +127,13 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 	var moduleName$2 = 'ngDefensive.services';
 
-	angular.module(moduleName$2, ['offline']).factory('CheckPreset', CheckPreset.factory).factory('DefensiveConfiguration', DefensiveConfiguration.factory);
+	angular.module(moduleName$2, ['offline']).service('CheckPreset', CheckPreset).factory('DefensiveConfiguration', DefensiveConfiguration.factory);
 
 	var NgDefensive = (function () {
 		function NgDefensive($compile, DefensiveConfiguration) {
 			_classCallCheck(this, NgDefensive);
 
 			this.restrict = 'A';
-			this.scope = {
-				callbacks: '=ngDefensiveCallbacks'
-			};
 			this.link = function (scope, element, attrs) {
 				var activeCase = null;
 				DefensiveConfiguration.getDefensiveCase(attrs.ngDefensive).then(function (confCase) {
@@ -151,7 +141,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 					activeCase = confCase;
 				});
 				scope.action = function () {
-					scope.callbacks[activeCase.caseName]();
+					scope.$eval(attrs.ngDefensiveCallbacks)[activeCase.caseName]();
 				};
 			};
 		}

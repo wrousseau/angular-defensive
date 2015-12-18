@@ -4,7 +4,7 @@ import DefensiveConfiguration from './defensive-configuration';
 var moduleName = 'ngDefensive.services';
 
 angular.module(moduleName, ['offline'])
-  .factory('CheckPreset', CheckPreset.factory)
+  .service('CheckPreset', CheckPreset)
   .factory('DefensiveConfiguration', DefensiveConfiguration.factory);
 
 export default moduleName;

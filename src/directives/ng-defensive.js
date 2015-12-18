@@ -2,9 +2,6 @@ class NgDefensive {
 
   constructor($compile, DefensiveConfiguration) {
     this.restrict = 'A';
-    this.scope = {
-      callbacks: '=ngDefensiveCallbacks'
-    };
     this.link = function(scope, element, attrs) {
       let activeCase = null;
       DefensiveConfiguration.getDefensiveCase(attrs.ngDefensive)
@@ -13,7 +10,7 @@ class NgDefensive {
         activeCase = confCase;
       });
       scope.action = function() {
-        scope.callbacks[activeCase.caseName]();
+        scope.$eval(attrs.ngDefensiveCallbacks)[activeCase.caseName]();
       };
     };
   }
