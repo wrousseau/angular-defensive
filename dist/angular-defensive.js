@@ -8,13 +8,18 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 	'use strict';
 
 	var HTTP = new WeakMap();
+	var Q$1 = new WeakMap();
 	var TEMPLATE_CACHE = new WeakMap();
 
 	var DefensiveConfiguration = (function () {
-		function DefensiveConfiguration($http, $templateCache) {
+
+		/*@ngInject*/
+
+		function DefensiveConfiguration($http, $q, $templateCache) {
 			_classCallCheck(this, DefensiveConfiguration);
 
 			HTTP.set(this, $http);
+			Q$1.set(this, $q);
 			TEMPLATE_CACHE.set(this, $templateCache);
 			this.configurations = {};
 		}
@@ -44,6 +49,21 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 				});
 			}
 		}, {
+			key: 'promiseWrap',
+			value: function promiseWrap(check) {
+				var deferred = Q$1.get(this).defer();
+				Q$1.get(this).when(check()).then(function (result) {
+					if (result === false) {
+						deferred.reject();
+					} else {
+						deferred.resolve();
+					}
+				})['catch'](function () {
+					deferred.reject();
+				});
+				return deferred.promise;
+			}
+		}, {
 			key: 'getDefensiveCase',
 			value: function getDefensiveCase(configurationName) {
 				var self = this;
@@ -55,20 +75,16 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 					var _loop = function () {
 						var confCase = cases.shift();
-						if (confCase.check()) {
-							return {
-								v: self.getTemplate(confCase).then(function (template) {
-									confCase.template = template;
-									return resolve(confCase);
-								})
-							};
-						}
+						self.promiseWrap(confCase.check).then(function () {
+							return self.getTemplate(confCase);
+						}).then(function (template) {
+							confCase.template = template;
+							return resolve(confCase);
+						});
 					};
 
 					while (cases.length) {
-						var _ret = _loop();
-
-						if (typeof _ret === 'object') return _ret.v;
+						_loop();
 					}
 				});
 			}
@@ -78,11 +94,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 				return DefensiveConfiguration.Configuration;
 			}
 		}], [{
-			key: 'factory',
-			value: function factory($http, $templateCache) {
-				return new DefensiveConfiguration($http, $templateCache);
-			}
-		}, {
 			key: 'Configuration',
 			get: function get() {
 				return (function () {
@@ -108,53 +119,99 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 		return DefensiveConfiguration;
 	})();
 
+	DefensiveConfiguration.$inject = ['$http', '$q', '$templateCache'];
+
+	var Q = new WeakMap();
+	var CONNECTION_STATUS = new WeakMap();
+
 	var CheckPreset = (function () {
-		function CheckPreset(connectionStatus) {
+
+		/*@ngInject*/
+
+		function CheckPreset($q, connectionStatus) {
 			_classCallCheck(this, CheckPreset);
 
-			this.connectionStatus = connectionStatus;
+			Q.set(this, $q);
+			CONNECTION_STATUS.set(this, connectionStatus);
 		}
 
 		_createClass(CheckPreset, [{
 			key: 'noNetwork',
 			value: function noNetwork() {
-				return !this.connectionStatus.isOnline();
+				return !CONNECTION_STATUS.get(this).isOnline();
+			}
+		}, {
+			key: 'geolocationNotSupported',
+			value: function geolocationNotSupported() {
+				return !navigator.geolocation;
+			}
+		}, {
+			key: 'geolocationNotAvailable',
+			value: function geolocationNotAvailable() {
+				var deferred = Q.get(this).defer();
+				if (navigator.geolocation) {
+					navigator.geolocation.getCurrentPosition(function () {
+						deferred.reject();
+					}, function () {
+						deferred.resolve();
+					});
+				} else {
+					deferred.resolve();
+				}
+				return deferred.promise;
 			}
 		}]);
 
 		return CheckPreset;
 	})();
 
+	CheckPreset.$inject = ['$q', 'connectionStatus'];
+
 	var moduleName$2 = 'ngDefensive.services';
 
-	angular.module(moduleName$2, ['offline']).service('CheckPreset', CheckPreset).factory('DefensiveConfiguration', DefensiveConfiguration.factory);
+	angular.module(moduleName$2, ['offline']).service('CheckPreset', CheckPreset).service('DefensiveConfiguration', DefensiveConfiguration);
+
+	var COMPILE = new WeakMap();
+	var DEFENSIVE_CONFIGURATION = new WeakMap();
 
 	var NgDefensive = (function () {
+
+		/*@ngInject*/
+
 		function NgDefensive($compile, DefensiveConfiguration) {
 			_classCallCheck(this, NgDefensive);
 
 			this.restrict = 'A';
-			this.link = function (scope, element, attrs) {
+			COMPILE.set(this, $compile);
+			DEFENSIVE_CONFIGURATION.set(this, DefensiveConfiguration);
+		}
+
+		_createClass(NgDefensive, [{
+			key: 'link',
+			value: function link(scope, element, attrs) {
 				var activeCase = null;
+				var DefensiveConfiguration = DEFENSIVE_CONFIGURATION.get(NgDefensive.instance);
 				DefensiveConfiguration.getDefensiveCase(attrs.ngDefensive).then(function (confCase) {
+					var $compile = COMPILE.get(NgDefensive.instance);
 					element.replaceWith($compile(confCase.template)(scope));
 					activeCase = confCase;
 				});
 				scope.action = function () {
 					scope.$eval(attrs.ngDefensiveCallbacks)[activeCase.caseName]();
 				};
-			};
-		}
-
-		_createClass(NgDefensive, null, [{
+			}
+		}], [{
 			key: 'factory',
 			value: function factory($compile, DefensiveConfiguration) {
-				return new NgDefensive($compile, DefensiveConfiguration);
+				NgDefensive.instance = new NgDefensive($compile, DefensiveConfiguration);
+				return NgDefensive.instance;
 			}
 		}]);
 
 		return NgDefensive;
 	})();
+
+	NgDefensive.factory.$inject = ['$compile', 'DefensiveConfiguration'];
 
 	var moduleName$1 = 'ngDefensive.directives';
 
