@@ -9,8 +9,14 @@ Defensive design for your angular application
 # Install
 
 ```
+npm install --save angular-defensive
+```
+
+OR
+
+```
 bower install --save angular-defensive
-````
+```
 
 # Including
 
@@ -25,13 +31,13 @@ Configurations should be registered into a run block. You can add to a configura
 ```javascript
 .run(function(CheckPreset, DefensiveConfiguration) {
   DefensiveConfiguration.registerConfiguration('requiresNetwork')
-	.addCase({
+  .addCase({
       caseName: 'noNetwork',
-			templateUrl: 'templates/no-network.html',
-			check: function() {
+      templateUrl: 'templates/no-network.html',
+      check: function() {
         return CheckPreset.noNetwork();
       }
-	});
+  });
 })
 ```
 
