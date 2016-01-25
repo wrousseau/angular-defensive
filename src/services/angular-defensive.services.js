@@ -5,6 +5,6 @@ var moduleName = 'ngDefensive.services';
 
 angular.module(moduleName, ['offline'])
   .service('CheckPreset', CheckPreset)
-  .factory('DefensiveConfiguration', DefensiveConfiguration.factory);
+  .service('DefensiveConfiguration', DefensiveConfiguration);
 
 export default moduleName;

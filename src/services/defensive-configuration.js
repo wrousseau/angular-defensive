@@ -1,10 +1,13 @@
 const HTTP = new WeakMap();
+const Q = new WeakMap();
 const TEMPLATE_CACHE = new WeakMap();
 
 class DefensiveConfiguration {
 
-  constructor($http, $templateCache) {
+  /*@ngInject*/
+  constructor($http, $q, $templateCache) {
     HTTP.set(this, $http);
+    Q.set(this, $q);
     TEMPLATE_CACHE.set(this, $templateCache);
     this.configurations = {};
   }
@@ -39,15 +42,31 @@ class DefensiveConfiguration {
         resolve(confCase.template);
       } else if (confCase.hasOwnProperty('templateUrl')) {
         HTTP.get(self)
-          .get(confCase.templateUrl, {
-            cache: TEMPLATE_CACHE.get(self),
-            headers: {Accept: 'text/html'}
-          })
-          .then(function(response) {
-            resolve(response.data);
-          });
+        .get(confCase.templateUrl, {
+          cache: TEMPLATE_CACHE.get(self),
+          headers: {Accept: 'text/html'}
+        })
+        .then(function(response) {
+          resolve(response.data);
+        });
       }
     });
+  }
+
+  promiseWrap(check) {
+    let deferred = Q.get(this).defer();
+    Q.get(this).when(check())
+    .then(function(result) {
+      if (result === false) {
+        deferred.reject();
+      } else {
+        deferred.resolve();
+      }
+    })
+    .catch(function() {
+      deferred.reject();
+    });
+    return deferred.promise;
   }
 
   getDefensiveCase(configurationName) {
@@ -59,21 +78,20 @@ class DefensiveConfiguration {
       let cases = self.configurations[configurationName].cases.slice();
       while (cases.length) {
         let confCase = cases.shift();
-        if (confCase.check()) {
-          return self.getTemplate(confCase)
-          .then(function(template) {
-            confCase.template = template;
-            return resolve(confCase);
-          });
-        }
+        self.promiseWrap(confCase.check)
+        .then(function() {
+          return self.getTemplate(confCase);
+        })
+        .then(function(template) {
+          confCase.template = template;
+          return resolve(confCase);
+        });
       }
     });
   }
 
-  static factory($http, $templateCache) {
-    return new DefensiveConfiguration($http, $templateCache);
-  }
-
 }
+
+DefensiveConfiguration.$inject = ['$http', '$q', '$templateCache'];
 
 export default DefensiveConfiguration;

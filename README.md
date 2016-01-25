@@ -38,7 +38,7 @@ Configurations should be registered into a run block. You can add to a configura
 * `caseName` : The name of the case, which you can later use in a controller to specify an action when the defensive template is shown
 * `template` : An inline defensive template to show when the `check` function returns `true`. Overrides any given `templateUrl`.
 * `templateUrl` : The url to a defensive template  to show when the `check` function returns `true`
-* `check` : When returning `true`, the given defensive template will be shown inside any element which uses the `ng-defensive` directive.
+* `check` : If it is a promise, when resolved, it will cause the given defensive template to be shown inside any element which uses the `ng-defensive` directive (it will not when the promise is rejected or never resolved). If it is a value, it will show the template when truethy.
 
 # Using the directive
 
