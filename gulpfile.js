@@ -1,3 +1,4 @@
+
 // Load Gulp and all of our Gulp plugins
 const gulp = require('gulp');
 const $ = require('gulp-load-plugins')();
@@ -23,13 +24,13 @@ const destinationFolder = path.dirname(mainFile);
 const exportFileName = path.basename(mainFile, path.extname(mainFile));
 
 // Remove the built files
-gulp.task('clean', function(cb) {
-  del([destinationFolder], cb);
+gulp.task('clean', function() {
+  del([destinationFolder]);
 });
 
 // Remove our temporary files
-gulp.task('clean-tmp', function(cb) {
-  del(['tmp'], cb);
+gulp.task('clean-tmp', function() {
+  del(['tmp']);
 });
 
 // Send a notification when JSCS fails,
@@ -60,7 +61,6 @@ createLintTask('lint-test', ['test/**/*.js']);
 // Build two versions of the library
 gulp.task('build', ['lint-src', 'clean'], function(done) {
   rollup.rollup({
-    base: 'src',
     entry: 'src/'+config.entryFileName,
   }).then(function(bundle) {
    var res = bundle.generate({
